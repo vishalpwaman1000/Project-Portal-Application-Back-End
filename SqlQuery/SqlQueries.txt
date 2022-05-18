@@ -1,0 +1,74 @@
+# Create Project Download Table
+
+create table crudoperation.ProjectDownload
+(
+ProjectID int auto_increment primary key, 
+ProjectName varchar(255), 
+FrontEndProjectUrl varchar(512),
+BackEndProjectUrl varchar(512),
+projectDocumentUrl varchar(512), 
+CreatedDate timestamp default current_timestamp, 
+ProjectStatus enum('Private','Public') default 'Public',
+IsArchive bit default 0,
+IsActive bit default 1
+IsTrash bit default 0
+)
+
+# Craete FeedBack Table
+
+create table FeedbackDetail(
+FeedbackID int auto_increment Primary key,
+CreatedDate timestamp default current_timestamp,
+CreatedBy int,
+FeedbackDetail text default null,
+IsActive bit default 1
+);
+
+# Update Table
+
+# 1] Update Project As Active Mode
+
+UPDATE crudoperation.ProjectDownload
+SET IsActive=1 AND IsArchive=0
+WHERE ProjectID=@ProjectID
+
+# 2] Update As Archive Mode
+
+UPDATE crudoperation.ProjectDownload
+SET IsArchive=1
+WHERE ProjectID=@ProjectID
+
+# 3] Update As Trash Mode
+
+UPDATE crudoperation.ProjectDownload
+SET IsActive=0 
+WHERE ProjectID=@ProjectID
+
+# Insert Project Detail
+
+INSERT INTO crudoperation.ProjectDownload (ProjectName, FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus)
+VALUES (@ProjectName, @FrontEndProjectUrl, @BackEndProjectUrl, @projectDocumentUrl, @ProjectStatus)
+
+# Get Active Projects Detail
+
+SELECT ProjectName,
+       (SELECT COUNT(*) FROM crudoperation.ProjectDownload WHERE IsActive=1 AND IsArchive=0),
+	   FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus
+FROM crudoperation.ProjectDownload
+WHERE IsActive=1 AND IsArchive=0
+
+# Get Archive Projects Details
+
+SELECT ProjectName,
+       (SELECT COUNT(*) FROM crudoperation.ProjectDownload WHERE IsActive=1 AND IsArchive=0),
+	   FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus
+FROM crudoperation.ProjectDownload
+WHERE IsArchive=1
+
+# Get Trash Projects Details
+
+SELECT ProjectName,
+       (SELECT COUNT(*) FROM crudoperation.ProjectDownload WHERE IsActive=1 AND IsArchive=0),
+	   FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus
+FROM crudoperation.ProjectDownload
+WHERE IsActive=0
