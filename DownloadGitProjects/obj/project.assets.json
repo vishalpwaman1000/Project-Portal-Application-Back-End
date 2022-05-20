@@ -1447,11 +1447,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\visha\\source\\repos\\DownloadGitProjects\\DownloadGitProjects\\DownloadGitProjects\\DownloadGitProjects.csproj",
+      "projectUniqueName": "C:\\Users\\visha\\source\\repos\\DownloadGitProjects\\Project Portal Application BE\\DownloadGitProjects\\DownloadGitProjects.csproj",
       "projectName": "DownloadGitProjects",
-      "projectPath": "C:\\Users\\visha\\source\\repos\\DownloadGitProjects\\DownloadGitProjects\\DownloadGitProjects\\DownloadGitProjects.csproj",
+      "projectPath": "C:\\Users\\visha\\source\\repos\\DownloadGitProjects\\Project Portal Application BE\\DownloadGitProjects\\DownloadGitProjects.csproj",
       "packagesPath": "C:\\Users\\visha\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\visha\\source\\repos\\DownloadGitProjects\\DownloadGitProjects\\DownloadGitProjects\\obj\\",
+      "outputPath": "C:\\Users\\visha\\source\\repos\\DownloadGitProjects\\Project Portal Application BE\\DownloadGitProjects\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\visha\\AppData\\Roaming\\NuGet\\NuGet.Config",

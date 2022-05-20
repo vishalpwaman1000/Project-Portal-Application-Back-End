@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace DownloadGitProjects.DataAccessLayer
 {
-    public class DownloadProjectDL : IDownloadProjectDL
+    public class ProjectPortalDL : IProjectPortalDL
     {
         private readonly IConfiguration _configuration;
         private readonly MySqlConnection _mySqlConnection;
-        public DownloadProjectDL(IConfiguration configuration)
+        public ProjectPortalDL(IConfiguration configuration)
         {
             _configuration = configuration;
             _mySqlConnection = new MySqlConnection(_configuration["ConnectionString:MySqlConnection"]);
@@ -40,7 +40,7 @@ namespace DownloadGitProjects.DataAccessLayer
                 }
 
                 string SqlQuery = @"SELECT * 
-                                    FROM crudoperation.userdetail 
+                                    FROM projectportalapplication.userdetail 
                                     WHERE UserName=@UserName AND PassWord=@PassWord AND Role=@Role;";
 
                 using (MySqlCommand sqlCommand = new MySqlCommand(SqlQuery, _mySqlConnection))
@@ -104,7 +104,7 @@ namespace DownloadGitProjects.DataAccessLayer
                     return response;
                 }
 
-                string SqlQuery = @"INSERT INTO crudoperation.userdetail 
+                string SqlQuery = @"INSERT INTO projectportalapplication.userdetail 
                                     (UserName, PassWord, Role) VALUES 
                                     (@UserName, @PassWord, @Role)";
 
@@ -136,6 +136,9 @@ namespace DownloadGitProjects.DataAccessLayer
 
             return response;
         }
+
+        // Admin API'S 
+
         public async Task<GetProjectListResponse> GetProjectList(GetProjectListRequest request)
         {
             GetProjectListResponse response = new GetProjectListResponse();
@@ -166,7 +169,7 @@ namespace DownloadGitProjects.DataAccessLayer
                                     SELECT ProjectID, ProjectName, ProjectDescription,
                                             (SELECT COUNT(*) FROM crudoperation.ProjectDownload WHERE IsTrash=0 AND IsArchive=0) AS TotalRecord,
                                            FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus , CreatedDate, IsActive , IsArchive, IsTrash
-                                    FROM crudoperation.ProjectDownload
+                                    FROM projectportalapplication.ProjectDownload
                                     WHERE IsTrash=0 AND IsArchive=0
                                     ORDER BY ProjectID DESC
                                     LIMIT @Offset, @NumberOfRecordPerPage
@@ -179,7 +182,7 @@ namespace DownloadGitProjects.DataAccessLayer
                                  SELECT ProjectID, ProjectName, ProjectDescription,
                                         (SELECT COUNT(*) FROM crudoperation.ProjectDownload WHERE IsArchive=1) AS TotalRecord,
                                         FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus , CreatedDate, IsActive , IsArchive, IsTrash
-                                    FROM crudoperation.ProjectDownload
+                                    FROM projectportalapplication.ProjectDownload
                                     WHERE IsArchive=1
                                     ORDER BY ProjectID DESC
                                     LIMIT @Offset, @NumberOfRecordPerPage
@@ -191,7 +194,7 @@ namespace DownloadGitProjects.DataAccessLayer
                                 SELECT ProjectID, ProjectName, ProjectDescription,
                                        (SELECT COUNT(*) FROM crudoperation.ProjectDownload WHERE IsTrash=1) AS TotalRecord,
                                        FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus , CreatedDate , IsActive , IsArchive, IsTrash
-                                    FROM crudoperation.ProjectDownload
+                                    FROM projectportalapplication.ProjectDownload
                                     WHERE IsTrash=1
                                     ORDER BY ProjectID DESC
                                     LIMIT @Offset, @NumberOfRecordPerPage
@@ -246,7 +249,7 @@ namespace DownloadGitProjects.DataAccessLayer
 
                 }
 
-               
+
 
             }
             catch (Exception ex)
@@ -285,33 +288,34 @@ namespace DownloadGitProjects.DataAccessLayer
 
                 //Active, Archive, Trash
                 string SqlQuery = string.Empty;
-                if (request.Operation.ToLowerInvariant() == "active") 
+                if (request.Operation.ToLowerInvariant() == "active")
                 {
                     // Trash => Active Or Archive => Active
                     response.Message = "Move to Active Project";
                     SqlQuery = @"
-                                 UPDATE crudoperation.ProjectDownload
+                                 UPDATE projectportalapplication.ProjectDownload
                                  SET IsArchive=0, IsTrash=0
                                  WHERE ProjectID=@ProjectID
                                 ";
 
-                }else 
-                if(request.Operation.ToLowerInvariant() == "inactive")
+                }
+                else
+                if (request.Operation.ToLowerInvariant() == "inactive")
                 {
                     // Active => Inactive
                     response.Message = "Move To InActive Project";
                     SqlQuery = @"
-                                   UPDATE crudoperation.ProjectDownload
+                                   UPDATE projectportalapplication.ProjectDownload
                                    SET IsActive=0
                                    WHERE ProjectID=@ProjectID
                                 ";
                 }
-                else if(request.Operation.ToLowerInvariant() == "archive")
+                else if (request.Operation.ToLowerInvariant() == "archive")
                 {
                     // Active => Archive
                     response.Message = "Move To Archive Project";
                     SqlQuery = @"
-                                   UPDATE crudoperation.ProjectDownload
+                                   UPDATE projectportalapplication.ProjectDownload
                                    SET IsArchive=1 , IsTrash=0
                                    WHERE ProjectID=@ProjectID
                                 ";
@@ -321,13 +325,13 @@ namespace DownloadGitProjects.DataAccessLayer
                     // Active => Trash
                     response.Message = "Move To Trash Project";
                     SqlQuery = @"
-                                   UPDATE crudoperation.ProjectDownload
+                                   UPDATE projectportalapplication.ProjectDownload
                                     SET IsTrash=1, IsArchive=0
                                     WHERE ProjectID=@ProjectID
                                 ";
                 }
-                
-                
+
+
 
                 using (MySqlCommand mySqlCommand = new MySqlCommand(SqlQuery, _mySqlConnection))
                 {
@@ -378,7 +382,7 @@ namespace DownloadGitProjects.DataAccessLayer
                     return response;
                 }
 
-                string SqlQuery = @"INSERT INTO crudoperation.ProjectDownload (ProjectName, ProjectDescription, FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus, IsActive)
+                string SqlQuery = @"INSERT INTO projectportalapplication.ProjectDownload (ProjectName, ProjectDescription, FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus, IsActive)
                                     VALUES (@ProjectName, @ProjectDescription, @FrontEndProjectUrl, @BackEndProjectUrl, @projectDocumentUrl, @ProjectStatus, @IsActive)";
 
                 using (MySqlCommand mySqlCommand = new MySqlCommand(SqlQuery, _mySqlConnection))
@@ -391,7 +395,7 @@ namespace DownloadGitProjects.DataAccessLayer
                     mySqlCommand.Parameters.AddWithValue("@BackEndProjectUrl", request.BackEndProjectUrl);
                     mySqlCommand.Parameters.AddWithValue("@projectDocumentUrl", request.BackEndProjectUrl);
                     mySqlCommand.Parameters.AddWithValue("@ProjectStatus", request.ProjectStatus); // Public , Private
-                    mySqlCommand.Parameters.AddWithValue("@IsActive", request.IsActive?1:0); // Public , Private
+                    mySqlCommand.Parameters.AddWithValue("@IsActive", request.IsActive ? 1 : 0); // Public , Private
                     int Status = await mySqlCommand.ExecuteNonQueryAsync();
                     if (Status <= 0)
                     {
@@ -436,7 +440,7 @@ namespace DownloadGitProjects.DataAccessLayer
                     return response;
                 }
 
-                string SqlQuery = @"UPDATE crudoperation.ProjectDownload 
+                string SqlQuery = @"UPDATE projectportalapplication.ProjectDownload 
                                     SET ProjectName=@ProjectName, 
                                         ProjectDescription=@ProjectDescription, 
                                         FrontEndProjectUrl=@FrontEndProjectUrl, 
@@ -457,7 +461,7 @@ namespace DownloadGitProjects.DataAccessLayer
                     mySqlCommand.Parameters.AddWithValue("@BackEndProjectUrl", request.BackEndProjectUrl);
                     mySqlCommand.Parameters.AddWithValue("@projectDocumentUrl", request.BackEndProjectUrl);
                     mySqlCommand.Parameters.AddWithValue("@ProjectStatus", request.ProjectStatus); // Public , Private
-                    mySqlCommand.Parameters.AddWithValue("@IsActive", request.IsActive?1:0);
+                    mySqlCommand.Parameters.AddWithValue("@IsActive", request.IsActive ? 1 : 0);
                     int Status = await mySqlCommand.ExecuteNonQueryAsync();
                     if (Status <= 0)
                     {
@@ -491,7 +495,7 @@ namespace DownloadGitProjects.DataAccessLayer
             try
             {
 
-                if(!(request.AvailabiltyStatus.ToLowerInvariant() == "public" || 
+                if (!(request.AvailabiltyStatus.ToLowerInvariant() == "public" ||
                      request.AvailabiltyStatus.ToLowerInvariant() == "private"))
                 {
                     response.IsSuccess = false;
@@ -499,13 +503,13 @@ namespace DownloadGitProjects.DataAccessLayer
                     return response;
                 }
 
-                if(_mySqlConnection != null && _mySqlConnection.State != ConnectionState.Open)
+                if (_mySqlConnection != null && _mySqlConnection.State != ConnectionState.Open)
                 {
                     await _mySqlConnection.OpenAsync();
                 }
 
                 string SqlQuery = @"
-                                    UPDATE crudoperation.ProjectDownload
+                                    UPDATE projectportalapplication.ProjectDownload
                                     SET ProjectStatus=@ProjectStatus
                                     WHERE ProjectID=@ProjectID
                                     ";
@@ -517,7 +521,7 @@ namespace DownloadGitProjects.DataAccessLayer
                     mySqlCommand.Parameters.AddWithValue("@ProjectID", request.ProjectID);
                     mySqlCommand.Parameters.AddWithValue("@ProjectStatus", request.AvailabiltyStatus);
                     int Status = await mySqlCommand.ExecuteNonQueryAsync();
-                    if(Status <=0)
+                    if (Status <= 0)
                     {
                         response.IsSuccess = false;
                         response.Message = "Something Went To Wrong";
@@ -525,7 +529,8 @@ namespace DownloadGitProjects.DataAccessLayer
                     }
                 }
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 response.IsSuccess = false;
                 response.Message = "Exception Occurs : " + ex.Message;
@@ -542,14 +547,14 @@ namespace DownloadGitProjects.DataAccessLayer
             try
             {
 
-                if(_mySqlConnection != null && _mySqlConnection.State != ConnectionState.Open)
+                if (_mySqlConnection != null && _mySqlConnection.State != ConnectionState.Open)
                 {
                     await _mySqlConnection.OpenAsync();
                 }
 
                 String SqlQuery = @"
                                     DELETE 
-                                    FROM crudoperation.projectdownload
+                                    FROM projectportalapplication.projectdownload
                                     where ProjectID=@ProjectID
                                     ";
 
@@ -559,7 +564,7 @@ namespace DownloadGitProjects.DataAccessLayer
                     mySqlCommand.CommandTimeout = 180;
                     mySqlCommand.Parameters.AddWithValue("@ProjectID", request.ProjectID);
                     int Status = await mySqlCommand.ExecuteNonQueryAsync();
-                    if(Status <=0)
+                    if (Status <= 0)
                     {
                         response.IsSuccess = false;
                         response.Message = "Something Went Wrong";
@@ -567,7 +572,290 @@ namespace DownloadGitProjects.DataAccessLayer
                     }
                 }
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.Message = "Exception Occurs : " + ex.Message;
+            }
+            finally
+            {
+                await _mySqlConnection.CloseAsync();
+                await _mySqlConnection.DisposeAsync();
+            }
+
+            return response;
+        }
+
+        // Customer API'S
+
+
+        public async Task<GetCustomerProjectListResponse> GetCustomerProjectList(GetCustomerProjectListRequest request)
+        {
+            GetCustomerProjectListResponse response = new GetCustomerProjectListResponse();
+            response.IsSuccess = true;
+            response.Message = "Successful";
+
+            try
+            {
+
+                if (_mySqlConnection != null && _mySqlConnection.State != ConnectionState.Open)
+                {
+                    await _mySqlConnection.OpenAsync();
+                }
+
+                string SqlQuery = string.Empty;
+
+                if (request.Operation.ToLowerInvariant().Trim() == "public")
+                {
+                    //Public
+                    SqlQuery = @"
+                                    SELECT ProjectID, ProjectName, ProjectDescription,
+                                            (SELECT COUNT(*) FROM crudoperation.ProjectDownload WHERE IsTrash=0 AND IsArchive=0) AS TotalRecord,
+                                           FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus , CreatedDate, IsActive , IsArchive, IsTrash
+                                    FROM projectportalapplication.ProjectDownload
+                                    WHERE IsActive=1 AND ProjectStatus = 'Public'
+                                    ORDER BY ProjectID DESC
+                                    LIMIT @Offset, @NumberOfRecordPerPage
+                                ";
+                }
+                else
+                {
+                    //Private
+                    SqlQuery = @"
+                                    SELECT ProjectID, ProjectName, ProjectDescription,
+		                                    (SELECT COUNT(*) FROM crudoperation.ProjectDownload WHERE IsTrash=0 AND IsArchive=0) AS TotalRecord,
+	                                       FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus , CreatedDate, IsActive , IsArchive, IsTrash
+                                    FROM projectportalapplication.ProjectDownload
+                                    WHERE IsActive=1 AND 
+                                          ProjectStatus = 'Private' AND 
+                                          (Select IsPrimeUser from projectportalapplication.userdetail where UserId=@UserId) ='1'
+                                    ORDER BY ProjectID DESC
+                                    LIMIT @Offset, @NumberOfRecordPerPage
+                                ";
+                }
+
+                int Offset = (request.PageNumber - 1) * request.NumberOfRecordPerPage;
+
+                using (MySqlCommand mySqlCommand = new MySqlCommand(SqlQuery, _mySqlConnection))
+                {
+                    mySqlCommand.CommandType = CommandType.Text;
+                    mySqlCommand.CommandTimeout = 180;
+                    mySqlCommand.Parameters.AddWithValue("@UserId", request.UserId);
+                    mySqlCommand.Parameters.AddWithValue("@Offset", Offset);
+                    mySqlCommand.Parameters.AddWithValue("@NumberOfRecordPerPage", request.NumberOfRecordPerPage);
+                    using (DbDataReader dbDataReader = await mySqlCommand.ExecuteReaderAsync())
+                    {
+                        if (dbDataReader.HasRows)
+                        {
+                            response.data = new List<GetCustomerProjectList>();
+                            int Count = 0;
+                            while (await dbDataReader.ReadAsync())
+                            {
+                                //ProjectName, FrontEndProjectUrl, BackEndProjectUrl, projectDocumentUrl, ProjectStatus, IsActive
+                                response.data.Add(new GetCustomerProjectList()
+                                {
+                                    ProjectID = dbDataReader["ProjectID"] != DBNull.Value ? Convert.ToInt32(dbDataReader["ProjectID"]) : -1,
+                                    ProjectName = dbDataReader["ProjectName"] != DBNull.Value ? Convert.ToString(dbDataReader["ProjectName"]) : string.Empty,
+                                    ProjectDescription = dbDataReader["ProjectDescription"] != DBNull.Value ? Convert.ToString(dbDataReader["ProjectDescription"]) : string.Empty,
+                                    FrontEndProjectUrl = dbDataReader["FrontEndProjectUrl"] != DBNull.Value ? Convert.ToString(dbDataReader["FrontEndProjectUrl"]) : string.Empty,
+                                    BackEndProjectUrl = dbDataReader["BackEndProjectUrl"] != DBNull.Value ? Convert.ToString(dbDataReader["BackEndProjectUrl"]) : string.Empty,
+                                    projectDocumentUrl = dbDataReader["projectDocumentUrl"] != DBNull.Value ? Convert.ToString(dbDataReader["projectDocumentUrl"]) : string.Empty,
+                                    ProjectStatus = dbDataReader["ProjectStatus"] != DBNull.Value ? Convert.ToString(dbDataReader["ProjectStatus"]) : string.Empty,
+                                    CreatedDate = dbDataReader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(dbDataReader["CreatedDate"]).ToString("dddd, dd MMMM yyyy hh:mm tt") : string.Empty,
+                                });
+
+                                if (Count == 0)
+                                {
+                                    Count++;
+                                    response.TotalRecords = dbDataReader["TotalRecord"] != DBNull.Value ? Convert.ToInt32(dbDataReader["TotalRecord"]) : -1;
+                                    response.TotalPage = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(response.TotalRecords / request.NumberOfRecordPerPage)));
+                                    response.CurrentPage = request.PageNumber;
+                                }
+                            }
+
+                        }
+                        else
+                        {
+                            response.Message = "No Project List Found";
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.Message = "Exception Occurs : " + ex.Message;
+            }
+            finally
+            {
+                await _mySqlConnection.CloseAsync();
+                await _mySqlConnection.DisposeAsync();
+            }
+
+            return response;
+        }
+
+        public async Task<UpdateCustomerAsPrimeResponse> UpdateCustomerAsPrime(UpdateCustomerAsPrimeRequest request)
+        {
+            UpdateCustomerAsPrimeResponse response = new UpdateCustomerAsPrimeResponse();
+            response.IsSuccess = true;
+            response.Message = "Successful";
+
+            try
+            {
+
+                if (_mySqlConnection != null && _mySqlConnection.State != ConnectionState.Open)
+                {
+                    await _mySqlConnection.OpenAsync();
+                }
+
+                string SqlQuery = @" UPDATE projectportalapplication.userdetail
+                                     SET IsPrimeUser = 1
+                                     WHERE UserId=@UserID";
+
+                using (MySqlCommand mySqlCommand = new MySqlCommand(SqlQuery, _mySqlConnection))
+                {
+                    mySqlCommand.CommandType = CommandType.Text;
+                    mySqlCommand.CommandTimeout = 180;
+                    mySqlCommand.Parameters.AddWithValue("@UserID", request.UserID);
+                    int Status = await mySqlCommand.ExecuteNonQueryAsync();
+                    if (Status <= 0)
+                    {
+                        response.IsSuccess = false;
+                        response.Message = "Something Went Wrong";
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.Message = "Exception Occurs : " + ex.Message;
+            }
+            finally
+            {
+                await _mySqlConnection.CloseAsync();
+                await _mySqlConnection.DisposeAsync();
+            }
+
+            return response;
+        }
+
+        public async Task<AddFeedbackResponse> AddFeedback(AddFeedbackRequest request)
+        {
+            AddFeedbackResponse response = new AddFeedbackResponse();
+            response.IsSuccess = true;
+            response.Message = "Successful";
+
+            try
+            {
+
+                if (_mySqlConnection != null && _mySqlConnection.State != ConnectionState.Open)
+                {
+                    await _mySqlConnection.OpenAsync();
+                }
+
+                string SqlQuery = @"
+                                    INSERT INTO projectportalapplication.feedbackdetail
+                                    (CreatedBy, FeedbackDetail) values (@CreatedBy, @FeedbackDetail);
+                                    ";
+
+                using (MySqlCommand mySqlCommand = new MySqlCommand(SqlQuery, _mySqlConnection))
+                {
+                    mySqlCommand.CommandType = CommandType.Text;
+                    mySqlCommand.CommandTimeout = 180;
+                    mySqlCommand.Parameters.AddWithValue("@CreatedBy", request.UserID);
+                    mySqlCommand.Parameters.AddWithValue("@FeedbackDetail", request.Feedback);
+                    int Status = await mySqlCommand.ExecuteNonQueryAsync();
+                    if (Status <= 0)
+                    {
+                        response.IsSuccess = false;
+                        response.Message = "Something Went Wrong";
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.Message = "Exception Occurs : " + ex.Message;
+            }
+            finally
+            {
+                await _mySqlConnection.CloseAsync();
+                await _mySqlConnection.DisposeAsync();
+            }
+
+            return response;
+        }
+
+        public async Task<GetFeedbackDetailsResponse> GetFeedbackDetails(GetFeedbackDetailsRequest request)
+        {
+            GetFeedbackDetailsResponse response = new GetFeedbackDetailsResponse();
+            response.IsSuccess = true;
+            response.Message = "Successful";
+
+            try
+            {
+
+                if (_mySqlConnection != null && _mySqlConnection.State != ConnectionState.Open)
+                {
+                    await _mySqlConnection.OpenAsync();
+                }
+
+                string SqlQuery = @"
+                                    SELECT FeedbackID,
+                                    (select Count(*) from projectportalapplication.feedbackdetail) as TotalRecord,
+                                    CreatedDate, CreatedBy, FeedbackDetail, IsActive
+                                    FROM projectportalapplication.feedbackdetail
+                                    ORDER BY FeedbackID DESC
+                                    LIMIT @Offset, @NumberOfRecordPerPage";
+
+                int Offset = (request.PageNumber - 1) * request.NumberOfRecordPerPage;
+
+                using (MySqlCommand mySqlCommand = new MySqlCommand(SqlQuery, _mySqlConnection))
+                {
+                    mySqlCommand.CommandType = CommandType.Text;
+                    mySqlCommand.CommandTimeout = 180;
+                    mySqlCommand.Parameters.AddWithValue("@Offset", Offset);
+                    mySqlCommand.Parameters.AddWithValue("@NumberOfRecordPerPage", request.NumberOfRecordPerPage);
+
+                    using (DbDataReader dataReader = await mySqlCommand.ExecuteReaderAsync())
+                    {
+                        if (dataReader.HasRows)
+                        {
+                            response.data = new List<GetFeedbackDetails>();
+                            int Count = 0;
+                            while (await dataReader.ReadAsync())
+                            {
+                                //FeedbackID, CratedDate, CreatedBy, FeedbackDetail, IsActive
+                                response.data.Add(
+                                    new GetFeedbackDetails()
+                                    {
+                                        FeedbackID = dataReader["FeedbackID"] != DBNull.Value ? (int)dataReader["FeedbackID"] : -1,
+                                        CreatedDate = dataReader["CreatedDate"] != DBNull.Value ? Convert.ToDateTime(dataReader["CreatedDate"]).ToString("dddd, dd MMMM yyyy hh:mm tt") : string.Empty,
+                                        CreatedBy = dataReader["CreatedBy"] != DBNull.Value ? (int)dataReader["CreatedBy"] : -1,
+                                        FeedbackDetail = dataReader["FeedbackDetail"] != DBNull.Value ? (string)dataReader["FeedbackDetail"] : string.Empty,
+                                        IsActive = dataReader["IsActive"] != DBNull.Value ? Convert.ToBoolean(dataReader["IsActive"]) : false,
+                                    }
+                                    )  ;
+
+                                if (Count == 0)
+                                {
+                                    Count++;
+                                    response.TotalRecords = dataReader["TotalRecord"] != DBNull.Value ? Convert.ToInt32(dataReader["TotalRecord"]) : -1;
+                                    response.TotalPage = Convert.ToInt32(Math.Ceiling(Convert.ToDecimal(response.TotalRecords / request.NumberOfRecordPerPage)));
+                                    response.CurrentPage = request.PageNumber;
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex)
             {
                 response.IsSuccess = false;
                 response.Message = "Exception Occurs : " + ex.Message;

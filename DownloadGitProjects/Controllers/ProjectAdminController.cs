@@ -11,13 +11,13 @@ namespace DownloadGitProjects.Controllers
 {
     [Route("api/[controller]/[Action]")]
     [ApiController]
-    public class DownloadProjectController : ControllerBase
+    public class ProjectAdminController : ControllerBase
     {
-        private readonly IDownloadProjectDL _downloadProjectDL;
+        private readonly IProjectPortalDL _projectPortalDL;
 
-        public DownloadProjectController(IDownloadProjectDL downloadProjectDL)
+        public ProjectAdminController(IProjectPortalDL downloadProjectDL)
         {
-            _downloadProjectDL = downloadProjectDL;
+            _projectPortalDL = downloadProjectDL;
         }
 
         [HttpPost]
@@ -26,7 +26,7 @@ namespace DownloadGitProjects.Controllers
             SignUpResponse response = new SignUpResponse();
             try
             {
-                response = await _downloadProjectDL.SignUp(request);
+                response = await _projectPortalDL.SignUp(request);
             }
             catch (Exception ex)
             {
@@ -43,7 +43,7 @@ namespace DownloadGitProjects.Controllers
             SignInResponse response = new SignInResponse();
             try
             {
-                response = await _downloadProjectDL.SignIn(request);
+                response = await _projectPortalDL.SignIn(request);
             }
             catch (Exception ex)
             {
@@ -54,6 +54,8 @@ namespace DownloadGitProjects.Controllers
             return Ok(response);
         }
 
+        //Admin API'S
+
         [HttpPost]
         public async Task<IActionResult> UploadProjectDetail(UploadProjectDetailRequest request)
         {
@@ -62,7 +64,7 @@ namespace DownloadGitProjects.Controllers
             try
             {
 
-                response = await _downloadProjectDL.UploadProjectDetail(request);
+                response = await _projectPortalDL.UploadProjectDetail(request);
 
             }
             catch (Exception ex)
@@ -82,7 +84,7 @@ namespace DownloadGitProjects.Controllers
             try
             {
 
-                response = await _downloadProjectDL.UpdateProjectDetail(request);
+                response = await _projectPortalDL.UpdateProjectDetail(request);
 
             }
             catch (Exception ex)
@@ -93,6 +95,7 @@ namespace DownloadGitProjects.Controllers
 
             return Ok(response);
         }
+        
         [HttpPost]
         public async Task<IActionResult> GetProjectList(GetProjectListRequest request)
         {
@@ -101,7 +104,7 @@ namespace DownloadGitProjects.Controllers
             try
             {
 
-                response = await _downloadProjectDL.GetProjectList(request);
+                response = await _projectPortalDL.GetProjectList(request);
 
             }catch(Exception ex)
             {
@@ -120,7 +123,7 @@ namespace DownloadGitProjects.Controllers
             try
             {
 
-                response = await _downloadProjectDL.UpdateStatus(request);
+                response = await _projectPortalDL.UpdateStatus(request);
 
             }
             catch (Exception ex)
@@ -140,7 +143,7 @@ namespace DownloadGitProjects.Controllers
             try
             {
 
-                response = await _downloadProjectDL.UpdateProjectAvailabilityStatus(request);
+                response = await _projectPortalDL.UpdateProjectAvailabilityStatus(request);
 
             }
             catch (Exception ex)
@@ -160,7 +163,7 @@ namespace DownloadGitProjects.Controllers
             try
             {
 
-                response = await _downloadProjectDL.DeleteProjectPermanently(request);
+                response = await _projectPortalDL.DeleteProjectPermanently(request);
 
             }
             catch (Exception ex)
@@ -171,6 +174,7 @@ namespace DownloadGitProjects.Controllers
 
             return Ok(response);
         }
+
 
     }
 }
